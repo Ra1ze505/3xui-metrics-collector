@@ -122,6 +122,50 @@ sudo journalctl -u 3xui-metrics-collector -f
 - `xui_traffic_total_bytes` - общий трафик в байтах
 - `xui_service_status` - статус сервиса (1 - активен, 0 - неактивен)
 
+## Настройка Prometheus
+
+1. Установите Prometheus, если он еще не установлен:
+```bash
+# Для Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install prometheus
+
+# Для CentOS/RHEL
+sudo yum install prometheus
+```
+
+2. Добавьте конфигурацию для сбора метрик в файл `/etc/prometheus/prometheus.yml`:
+```yaml
+scrape_configs:
+  - job_name: '3xui'
+    static_configs:
+      - targets: ['localhost:2112']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+```
+
+3. Перезапустите Prometheus для применения изменений:
+```bash
+sudo systemctl restart prometheus
+```
+
+4. Проверьте, что метрики собираются:
+   - Откройте веб-интерфейс Prometheus (обычно доступен по адресу http://localhost:9090)
+   - Перейдите в раздел Status -> Targets
+   - Убедитесь, что target `3xui` находится в состоянии UP
+
+5. Пример запроса для Grafana:
+```promql
+# Общее количество клиентов
+xui_clients_total
+
+# Общий трафик в гигабайтах
+xui_traffic_total_bytes / 1024 / 1024 / 1024
+
+# Статус сервиса
+xui_service_status
+```
+
 ## Лицензия
 
 MIT 
