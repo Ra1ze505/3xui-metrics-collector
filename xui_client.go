@@ -52,10 +52,15 @@ type ClientStats struct {
 }
 
 func NewXUIClient(config *Config) *XUIClient {
+	protocol := "http"
+	if config.XUIUseTLS {
+		protocol = "https"
+	}
+
 	return &XUIClient{
 		client:  &http.Client{},
 		config:  config,
-		baseURL: fmt.Sprintf("https://%s:%s%s", config.XUIHost, config.XUIPort, config.XUIBasePath),
+		baseURL: fmt.Sprintf("%s://%s:%s%s", protocol, config.XUIHost, config.XUIPort, config.XUIBasePath),
 	}
 }
 

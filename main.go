@@ -14,8 +14,8 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	log.Printf("Configuration loaded: Host=%s, Port=%s, BasePath=%s",
-		config.XUIHost, config.XUIPort, config.XUIBasePath)
+	log.Printf("Configuration loaded: Host=%s, Port=%s, BasePath=%s, UseTLS=%t",
+		config.XUIHost, config.XUIPort, config.XUIBasePath, config.XUIUseTLS)
 
 	client := NewXUIClient(config)
 
