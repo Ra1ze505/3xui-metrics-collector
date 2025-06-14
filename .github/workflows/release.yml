@@ -92,11 +92,12 @@ jobs:
           echo "Initial release" > CHANGELOG.md
         fi
         
-        # Set output for release body
+        # Set output for release body using proper delimiter
+        delimiter="$(openssl rand -hex 8)"
         {
-          echo 'CHANGELOG<<EOF'
+          echo "CHANGELOG<<${delimiter}"
           cat CHANGELOG.md
-          echo EOF
+          echo "${delimiter}"
         } >> $GITHUB_OUTPUT
 
     - name: Create Release
