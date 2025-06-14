@@ -92,18 +92,14 @@ jobs:
           echo "Initial release" > CHANGELOG.md
         fi
         
-        # Set output for release body using EOF delimiter - official GitHub pattern
-        {
-          echo 'CHANGELOG<<EOF'
-          cat CHANGELOG.md
-          echo 'EOF'
-        } >> $GITHUB_OUTPUT
+        # Save changelog to file for the release action
+        # No need for GitHub output, we'll read directly from file
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: build/*
-        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        body_path: CHANGELOG.md
         draft: false
         prerelease: false
         generate_release_notes: true
