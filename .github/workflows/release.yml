@@ -93,12 +93,10 @@ jobs:
         fi
         
         # Set output for release body using proper delimiter
-        delimiter="$(openssl rand -hex 8)"
-        {
-          echo "CHANGELOG<<${delimiter}"
-          cat CHANGELOG.md
-          echo "${delimiter}"
-        } >> $GITHUB_OUTPUT
+        delimiter="EOF_$(date +%s)"
+        echo "CHANGELOG<<${delimiter}" >> $GITHUB_OUTPUT
+        cat CHANGELOG.md >> $GITHUB_OUTPUT
+        echo "${delimiter}" >> $GITHUB_OUTPUT
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
