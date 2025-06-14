@@ -1,48 +1,125 @@
 # 3xui-metrics-collector
 
-Сервис для сбора метрик с панели управления 3xui и их экспорта в формате Prometheus.
+Service for collecting metrics from 3xui control panel and exporting them in Prometheus format.
 
-## Описание
+## Description
 
-Этот сервис собирает метрики с панели управления 3xui и экспортирует их в формате Prometheus. Метрики включают:
-- Количество клиентов
-- Общий трафик
-- Статус сервиса
-- И другие метрики, доступные через API 3xui
+This service collects metrics from the 3xui control panel and exports them in Prometheus format. Metrics include:
+- Number of clients
+- Total traffic
+- Service status
+- Other metrics available through the 3xui API
 
-## Требования
+## Requirements
 
-- Go 1.21 или выше
-- Доступ к панели управления 3xui
-- Prometheus (для сбора метрик)
+- Go 1.21 or higher (for building from source)
+- Access to 3xui control panel
+- Prometheus (for collecting metrics)
 
-## Сборка проекта
+## Installation Methods
 
-1. Клонируйте репозиторий:
+### Method 1: Using Docker (Recommended)
+
+Run the service using Docker:
+
 ```bash
-git clone https://github.com/andrejmatveev/3xui-metrics-collector.git
+docker run -d \
+  --name 3xui-metrics-collector \
+  -p 2112:2112 \
+  -e X_UI_HOST=your-xui-host \
+  -e X_UI_PORT=54321 \
+  -e X_UI_USERNAME=admin \
+  -e X_UI_PASSWORD=your-password \
+  ra1zee/3xui-metrics-collector:latest
+```
+
+With docker-compose:
+
+```yaml
+version: '3.8'
+services:
+  3xui-metrics-collector:
+    image: ra1zee/3xui-metrics-collector:latest
+    ports:
+      - "2112:2112"
+    environment:
+      - X_UI_HOST=your-xui-host
+      - X_UI_PORT=54321
+      - X_UI_USERNAME=admin
+      - X_UI_PASSWORD=your-password
+    restart: unless-stopped
+```
+
+### Method 2: Download Pre-built Binary
+
+Download the latest release for your platform:
+
+```bash
+# For Linux amd64
+curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-amd64.tar.gz
+tar -xzf 3xui-metrics-collector.tar.gz
+
+# For Linux arm64
+curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-arm64.tar.gz
+tar -xzf 3xui-metrics-collector.tar.gz
+
+# For macOS amd64
+curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-darwin-amd64.tar.gz
+tar -xzf 3xui-metrics-collector.tar.gz
+
+# For macOS arm64 (Apple Silicon)
+curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-darwin-arm64.tar.gz
+tar -xzf 3xui-metrics-collector.tar.gz
+
+# For Windows amd64
+curl -L -o 3xui-metrics-collector.zip https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-windows-amd64.zip
+unzip 3xui-metrics-collector.zip
+```
+
+### Method 3: Build from Source
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Ra1ze505/3xui-metrics-collector.git
 cd 3xui-metrics-collector
 ```
 
-2. Соберите проект:
+2. Build the project:
 ```bash
 go build -o 3xui-metrics-collector
 ```
 
-## Конфигурация
+## Configuration
 
-Сервис использует следующие переменные окружения:
+The service uses the following environment variables:
 
-- `X_UI_HOST` - хост панели управления 3xui
-- `X_UI_PORT` - порт панели управления 3xui
-- `X_UI_BASEPATH` - базовый путь API (по умолчанию пустой)
-- `X_UI_USERNAME` - имя пользователя для доступа к API
-- `X_UI_PASSWORD` - пароль для доступа к API
+- `X_UI_HOST` - 3xui control panel host
+- `X_UI_PORT` - 3xui control panel port  
+- `X_UI_BASEPATH` - API base path (empty by default)
+- `X_UI_USERNAME` - username for API access
+- `X_UI_PASSWORD` - password for API access
 
-## Настройка systemd сервиса
+## Setting up systemd service
 
-1. Создайте файл конфигурации `/etc/3xui-metrics-collector/config.env`:
+After downloading the binary (Method 2), you can set it up as a systemd service:
+
+1. Create the necessary directories and move files:
 ```bash
+# Download and extract the binary (example for Linux amd64)
+curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-amd64.tar.gz
+tar -xzf 3xui-metrics-collector.tar.gz
+
+# Create directories
+sudo mkdir -p /opt/3xui-metrics-collector
+sudo mkdir -p /etc/3xui-metrics-collector
+
+# Move binary
+sudo mv 3xui-metrics-collector /opt/3xui-metrics-collector/
+```
+
+2. Create configuration file `/etc/3xui-metrics-collector/config.env`:
+```bash
+sudo tee /etc/3xui-metrics-collector/config.env > /dev/null <<EOF
 X_UI_HOST=your_xui_host
 X_UI_PORT=your_xui_port
 X_UI_BASEPATH=your_base_path
@@ -50,8 +127,9 @@ X_UI_USERNAME=your_username
 X_UI_PASSWORD=your_password
 ```
 
-2. Создайте файл сервиса `/etc/systemd/system/3xui-metrics-collector.service`:
-```ini
+3. Create systemd service file `/etc/systemd/system/3xui-metrics-collector.service`:
+```bash
+sudo tee /etc/systemd/system/3xui-metrics-collector.service > /dev/null <<EOF
 [Unit]
 Description=3xui Metrics Collector
 After=network.target
@@ -69,15 +147,7 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-3. Создайте необходимые директории и переместите файлы:
-```bash
-sudo mkdir -p /opt/3xui-metrics-collector
-sudo mkdir -p /etc/3xui-metrics-collector
-sudo cp 3xui-metrics-collector /opt/3xui-metrics-collector/
-sudo cp config.env /etc/3xui-metrics-collector/
-```
-
-4. Установите правильные разрешения:
+4. Set proper permissions:
 ```bash
 sudo chown -R root:root /opt/3xui-metrics-collector
 sudo chown -R root:root /etc/3xui-metrics-collector
@@ -85,56 +155,58 @@ sudo chmod 755 /opt/3xui-metrics-collector/3xui-metrics-collector
 sudo chmod 600 /etc/3xui-metrics-collector/config.env
 ```
 
-5. Запустите сервис:
+5. Start the service:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable 3xui-metrics-collector
 sudo systemctl start 3xui-metrics-collector
 ```
 
-## Управление сервисом
+## Service Management
 
-- Проверить статус:
+- Check status:
 ```bash
 sudo systemctl status 3xui-metrics-collector
 ```
 
-- Остановить сервис:
+- Stop service:
 ```bash
 sudo systemctl stop 3xui-metrics-collector
 ```
 
-- Перезапустить сервис:
+- Restart service:
 ```bash
 sudo systemctl restart 3xui-metrics-collector
 ```
 
-- Посмотреть логи:
+- View logs:
 ```bash
 sudo journalctl -u 3xui-metrics-collector -f
 ```
 
-## Метрики
+## Metrics
 
-Сервис экспортирует метрики в формате Prometheus на порту 2112. Доступные метрики:
+The service exports metrics in Prometheus format on port 2112. Available metrics:
 
-- `xui_clients_total` - общее количество клиентов
-- `xui_traffic_total_bytes` - общий трафик в байтах
-- `xui_service_status` - статус сервиса (1 - активен, 0 - неактивен)
+- `xui_clients_total` - total number of clients
+- `xui_traffic_total_bytes` - total traffic in bytes
+- `xui_service_status` - service status (1 - active, 0 - inactive)
 
-## Настройка Prometheus
+Access metrics at: `http://localhost:2112/metrics`
 
-1. Установите Prometheus, если он еще не установлен:
+## Prometheus Configuration
+
+1. Install Prometheus if not already installed:
 ```bash
-# Для Ubuntu/Debian
+# For Ubuntu/Debian
 sudo apt-get update
 sudo apt-get install prometheus
 
-# Для CentOS/RHEL
+# For CentOS/RHEL
 sudo yum install prometheus
 ```
 
-2. Добавьте конфигурацию для сбора метрик в файл `/etc/prometheus/prometheus.yml`:
+2. Add metrics collection configuration to `/etc/prometheus/prometheus.yml`:
 ```yaml
 scrape_configs:
   - job_name: '3xui'
@@ -144,28 +216,43 @@ scrape_configs:
     scrape_timeout: 10s
 ```
 
-3. Перезапустите Prometheus для применения изменений:
+3. Restart Prometheus to apply changes:
 ```bash
 sudo systemctl restart prometheus
 ```
 
-4. Проверьте, что метрики собираются:
-   - Откройте веб-интерфейс Prometheus (обычно доступен по адресу http://localhost:9090)
-   - Перейдите в раздел Status -> Targets
-   - Убедитесь, что target `3xui` находится в состоянии UP
+4. Verify metrics are being collected:
+   - Open Prometheus web interface (usually available at http://localhost:9090)
+   - Go to Status -> Targets
+   - Make sure the `3xui` target is in UP state
 
-5. Пример запроса для Grafana:
+5. Example queries for Grafana:
 ```promql
-# Общее количество клиентов
+# Total number of clients
 xui_clients_total
 
-# Общий трафик в гигабайтах
+# Total traffic in gigabytes
 xui_traffic_total_bytes / 1024 / 1024 / 1024
 
-# Статус сервиса
+# Service status
 xui_service_status
 ```
 
-## Лицензия
+## Docker Image Tags
+
+Available Docker image tags:
+- `latest` - latest stable release
+- `v1.0.0` - specific version tags
+- `main` - latest development build
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
 
 MIT 

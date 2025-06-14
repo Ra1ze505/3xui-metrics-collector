@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Build binaries
+      run: |
+        # Create build directory
+        mkdir -p build
+        
+        # Build for different platforms
+        declare -a platforms=(
+          "linux/amd64"
+          "linux/arm64"
+          "linux/arm"
+          "darwin/amd64"
+          "darwin/arm64"
+          "windows/amd64"
+          "windows/arm64"
+        )
+        
+        for platform in "${platforms[@]}"; do
+          IFS='/' read -r os arch <<< "$platform"
+          
+          output_name="3xui-metrics-collector"
+          if [ "$os" = "windows" ]; then
+            output_name="${output_name}.exe"
+          fi
+          
+          archive_name="3xui-metrics-collector-${os}-${arch}"
+          if [ "$os" = "windows" ]; then
+            archive_name="${archive_name}.zip"
+          else
+            archive_name="${archive_name}.tar.gz"
+          fi
+          
+          echo "Building for $os/$arch..."
+          GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-w -s" -o "build/$output_name" .
+          
+          # Create archive
+          cd build
+          if [ "$os" = "windows" ]; then
+            zip "$archive_name" "$output_name"
+          else
+            tar -czf "$archive_name" "$output_name"
+          fi
+          rm "$output_name"
+          cd ..
+        done
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the tag name
+        TAG=${GITHUB_REF#refs/tags/}
+        
+        # Get previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 $TAG^ 2>/dev/null || echo "")
+        
+        # Generate changelog
+        if [ -n "$PREV_TAG" ]; then
+          echo "Changes since $PREV_TAG:" > CHANGELOG.md
+          git log --pretty=format:"* %s (%h)" $PREV_TAG..$TAG >> CHANGELOG.md
+        else
+          echo "Initial release" > CHANGELOG.md
+        fi
+        
+        # Set output for release body
+        {
+          echo 'CHANGELOG<<EOF'
+          cat CHANGELOG.md
+          echo EOF
+        } >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: build/*
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

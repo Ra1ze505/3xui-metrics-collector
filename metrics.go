@@ -50,11 +50,9 @@ func (m *MetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Reset metrics
 	m.up.Reset()
 	m.down.Reset()
 
-	// Get inbounds data
 	log.Printf("Starting metrics collection...")
 	inbounds, err := m.client.GetInbounds()
 	if err != nil {
@@ -62,7 +60,6 @@ func (m *MetricsCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	// Update metrics
 	clientCount := 0
 	for _, inbound := range inbounds {
 		for _, client := range inbound.ClientStats {
@@ -78,11 +75,9 @@ func (m *MetricsCollector) Collect(ch chan<- prometheus.Metric) {
 				"inbound_remark": inbound.Remark,
 			}
 
-			// Set exact integer values
 			upValue := float64(client.Up)
 			downValue := float64(client.Down)
 
-			// Use Set with exact values
 			m.up.With(labels).Set(upValue)
 			m.down.With(labels).Set(downValue)
 		}
