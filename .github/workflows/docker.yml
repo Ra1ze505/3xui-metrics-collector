@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/3xui-metrics-collector
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/3xui-metrics-collector
 
 jobs:
   build:
