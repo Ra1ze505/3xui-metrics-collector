@@ -56,7 +56,7 @@ func (m *MetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	log.Printf("Starting metrics collection...")
 	inbounds, err := m.client.GetInbounds()
 	if err != nil {
-		log.Printf("Error getting inbounds: %v", err)
+		log.Fatalf("Error getting inbounds: %v", err)
 		return
 	}
 
