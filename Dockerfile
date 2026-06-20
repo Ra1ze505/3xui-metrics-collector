@@ -1,11 +1,15 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.22-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-RUN go build -o 3xui-metrics-collector
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o /exporter ./cmd/exporter
 
-FROM alpine:latest
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
-COPY --from=builder /app/3xui-metrics-collector .
+COPY --from=builder /exporter /app/exporter
 EXPOSE 2112
-CMD ["./3xui-metrics-collector"] 
+ENTRYPOINT ["/app/exporter"]
+CMD ["-config", "/app/config.yaml"]

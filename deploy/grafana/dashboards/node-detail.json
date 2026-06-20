@@ -1,0 +1,115 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [{ "expr": "xui_server_cpu_percent{panel=~\"$panel\"}", "legendFormat": "{{panel}}", "refId": "A" }],
+      "title": "CPU %",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [
+        { "expr": "xui_server_mem_bytes{panel=~\"$panel\",state=\"used\"}", "legendFormat": "{{panel}} used", "refId": "A" },
+        { "expr": "xui_server_mem_bytes{panel=~\"$panel\",state=\"total\"}", "legendFormat": "{{panel}} total", "refId": "B" }
+      ],
+      "title": "Memory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "targets": [
+        { "expr": "xui_server_swap_bytes{panel=~\"$panel\",state=\"used\"}", "legendFormat": "{{panel}} swap used", "refId": "A" },
+        { "expr": "xui_server_disk_bytes{panel=~\"$panel\",state=\"used\"}", "legendFormat": "{{panel}} disk used", "refId": "B" }
+      ],
+      "title": "Swap & Disk Used",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "targets": [
+        { "expr": "xui_server_load{panel=~\"$panel\",period=\"1m\"}", "legendFormat": "{{panel}} 1m", "refId": "A" },
+        { "expr": "xui_server_load{panel=~\"$panel\",period=\"5m\"}", "legendFormat": "{{panel}} 5m", "refId": "B" },
+        { "expr": "xui_server_load{panel=~\"$panel\",period=\"15m\"}", "legendFormat": "{{panel}} 15m", "refId": "C" }
+      ],
+      "title": "Load Average",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "targets": [
+        { "expr": "rate(xui_server_net_traffic_bytes_total{panel=~\"$panel\",direction=\"sent\"}[5m])", "legendFormat": "{{panel}} sent", "refId": "A" },
+        { "expr": "rate(xui_server_net_traffic_bytes_total{panel=~\"$panel\",direction=\"recv\"}[5m])", "legendFormat": "{{panel}} recv", "refId": "B" }
+      ],
+      "title": "Network Traffic Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "targets": [
+        { "expr": "xui_server_tcp_connections{panel=~\"$panel\"}", "legendFormat": "{{panel}} TCP", "refId": "A" },
+        { "expr": "xui_server_udp_connections{panel=~\"$panel\"}", "legendFormat": "{{panel}} UDP", "refId": "B" },
+        { "expr": "xui_xray_up{panel=~\"$panel\"}", "legendFormat": "{{panel}} xray up", "refId": "C" },
+        { "expr": "xui_server_uptime_seconds{panel=~\"$panel\"}", "legendFormat": "{{panel}} uptime", "refId": "D" }
+      ],
+      "title": "Connections, Xray & Uptime",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["3x-ui", "node"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_up, panel)",
+        "includeAll": true,
+        "multi": true,
+        "name": "panel",
+        "query": "label_values(xui_up, panel)",
+        "refresh": 2,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "name": "node",
+        "query": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "3x-ui Node Detail",
+  "uid": "xui-node-detail",
+  "version": 1
+}
