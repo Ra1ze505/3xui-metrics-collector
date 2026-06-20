@@ -85,6 +85,8 @@ var allDescs = []*prometheus.Desc{
 	descClientExpiry,
 	descClientInboundCount,
 	descClientGroupInfo,
+	descClientTrafficUp,
+	descClientTrafficDown,
 	// outbounds
 	descOutboundUp,
 	descOutboundDown,
@@ -138,6 +140,9 @@ var (
 	descClientExpiry       = prometheus.NewDesc("xui_client_expiry_timestamp_seconds", "Client expiry timestamp.", []string{"panel", "email"}, nil)
 	descClientInboundCount = prometheus.NewDesc("xui_client_inbound_count", "Number of inbounds attached to client.", []string{"panel", "email"}, nil)
 	descClientGroupInfo    = prometheus.NewDesc("xui_client_group_info", "Client group info.", []string{"panel", "email", "group"}, nil)
+
+	descClientTrafficUp   = prometheus.NewDesc("xui_client_traffic_up_bytes_total", "Authoritative per-client cumulative upload bytes, email-keyed (aggregated across all nodes by 3x-ui).", []string{"panel", "email"}, nil)
+	descClientTrafficDown = prometheus.NewDesc("xui_client_traffic_down_bytes_total", "Authoritative per-client cumulative download bytes, email-keyed (aggregated across all nodes by 3x-ui).", []string{"panel", "email"}, nil)
 
 	descOutboundUp   = prometheus.NewDesc("xui_outbound_up_bytes_total", "Outbound upload bytes.", []string{"panel", "tag"}, nil)
 	descOutboundDown = prometheus.NewDesc("xui_outbound_down_bytes_total", "Outbound download bytes.", []string{"panel", "tag"}, nil)
@@ -374,5 +379,13 @@ func (c *Collector) collectClients(ch chan<- prometheus.Metric, snap *poller.Sna
 			group = "default"
 		}
 		ch <- prometheus.MustNewConstMetric(descClientGroupInfo, prometheus.GaugeValue, 1, panel, cl.Email, group)
+
+		// Authoritative per-client totals come from the email-keyed client_traffics
+		// row (clients/list). Per-inbound clientStats are replicated across the
+		// client's inbounds in multi-node setups and cannot be summed reliably.
+		if cl.Traffic != nil {
+			ch <- prometheus.MustNewConstMetric(descClientTrafficUp, prometheus.CounterValue, float64(cl.Traffic.Up), panel, cl.Email)
+			ch <- prometheus.MustNewConstMetric(descClientTrafficDown, prometheus.CounterValue, float64(cl.Traffic.Down), panel, cl.Email)
+		}
 	}
 }
