@@ -64,6 +64,7 @@ func TestCollectorEmitsExpectedMetrics(t *testing.T) {
 				Group:      "vip",
 			},
 			InboundIDs: []int{10},
+			Traffic:    &xui.ClientTraffic{Email: "user@example.com", Up: 12345, Down: 67890},
 		}},
 		Outbounds: []xui.OutboundTraffic{{Tag: "direct", Up: 1, Down: 2}},
 	}
@@ -81,6 +82,7 @@ func TestCollectorEmitsExpectedMetrics(t *testing.T) {
 			"xui_up", "xui_scrape_errors_total", "xui_panel_info", "xui_node_up",
 			"xui_server_cpu_percent", "xui_inbound_up_bytes_total", "xui_client_up_bytes_total",
 			"xui_client_online", "xui_client_group_info", "xui_outbound_up_bytes_total",
+			"xui_client_traffic_up_bytes_total", "xui_client_traffic_down_bytes_total",
 		} {
 			if strings.Contains(desc, `fqName: "`+required+`"`) {
 				names[required]++
@@ -99,6 +101,8 @@ func TestCollectorEmitsExpectedMetrics(t *testing.T) {
 		"xui_client_online",
 		"xui_client_group_info",
 		"xui_outbound_up_bytes_total",
+		"xui_client_traffic_up_bytes_total",
+		"xui_client_traffic_down_bytes_total",
 	}
 	for _, name := range required {
 		if names[name] == 0 {

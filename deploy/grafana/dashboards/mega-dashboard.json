@@ -1,0 +1,562 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Fleet Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "count(xui_up{panel=~\"$panel\"} == 1)", "refId": "A" }],
+      "title": "Panels Up",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "count(xui_node_up{panel=~\"$panel\",node=~\"$node\"} == 1)", "refId": "A" }],
+      "title": "Nodes Up",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(xui_node_online_clients{panel=~\"$panel\",node=~\"$node\"})", "refId": "A" }],
+      "title": "Online Clients",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(xui_node_client_count{panel=~\"$panel\",node=~\"$node\"})", "refId": "A" }],
+      "title": "Total Clients",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "expr": "sum(rate(xui_inbound_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_inbound_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+        "refId": "A"
+      }],
+      "title": "Fleet Traffic Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 10 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 7,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(xui_scrape_errors_total{panel=~\"$panel\"})", "refId": "A" }],
+      "title": "Scrape Errors",
+      "type": "stat"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 10,
+      "title": "Traffic by Node",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 1, "stacking": { "group": "A", "mode": "normal" }, "showPoints": "never" }, "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 9, "w": 16, "x": 0, "y": 6 },
+      "id": 11,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "description": "Per-node traffic from inbound counters (xui_inbound_*). Inbounds are physically bound to a node, so this is reliable; per-client clientStats are replicated across nodes and not used here.",
+      "targets": [{
+        "expr": "sum by (panel, node) (rate(xui_inbound_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_inbound_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+        "legendFormat": "{{panel}}/{{node}}",
+        "refId": "A"
+      }],
+      "title": "Traffic Rate by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-GrYlRd" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 6 },
+      "id": 12,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "targets": [{
+        "expr": "topk(15, sum by (node) (rate(xui_inbound_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_inbound_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m])))",
+        "legendFormat": "{{node}}",
+        "refId": "A"
+      }],
+      "title": "Top Nodes (current rate)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "CPU usage percent per node over time. Each line is a node.",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "max": 100, "min": 0, "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 15 },
+      "id": 13,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "xui_node_cpu_percent{panel=~\"$panel\",node=~\"$node\"}",
+        "legendFormat": "{{node}} ({{role}})",
+        "refId": "A"
+      }],
+      "title": "CPU % by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Memory usage percent per node over time. Each line is a node.",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "max": 100, "min": 0, "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 15 },
+      "id": 14,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "xui_node_mem_percent{panel=~\"$panel\",node=~\"$node\"}",
+        "legendFormat": "{{node}} ({{role}})",
+        "refId": "A"
+      }],
+      "title": "Memory % by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Online clients per node over time.",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "min": 0, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 15,
+      "options": { "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "xui_node_online_clients{panel=~\"$panel\",node=~\"$node\"}",
+        "legendFormat": "{{node}}",
+        "refId": "A"
+      }],
+      "title": "Online Clients by Node",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "description": "Node availability (up/down) and node latency over time.",
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "min": 0, "unit": "ms" }, "overrides": [{ "matcher": { "id": "byRegexp", "options": ".*up$" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "max", "value": 1 }] }] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 16,
+      "options": { "legend": { "calcs": ["mean", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "xui_node_latency_ms{panel=~\"$panel\",node=~\"$node\"}",
+        "legendFormat": "{{node}} latency",
+        "refId": "A"
+      }],
+      "title": "Node Latency",
+      "type": "timeseries"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 20,
+      "title": "Traffic by Users",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 9, "w": 14, "x": 0, "y": 33 },
+      "id": 21,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "description": "Authoritative per-client traffic (email-keyed xui_client_traffic_*). No node dimension: 3x-ui aggregates client traffic centrally by email.",
+      "targets": [{
+        "expr": "topk(20, sum by (email) (rate(xui_client_traffic_up_bytes_total{panel=~\"$panel\"}[5m]) + rate(xui_client_traffic_down_bytes_total{panel=~\"$panel\"}[5m])))",
+        "legendFormat": "{{email}}",
+        "refId": "A"
+      }],
+      "title": "Top 20 Users by Traffic Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "bars", "fillOpacity": 80, "lineWidth": 0 }, "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 9, "w": 10, "x": 14, "y": 33 },
+      "id": 22,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "count by (group) (xui_client_group_info{panel=~\"$panel\"})",
+        "legendFormat": "{{group}}",
+        "refId": "A"
+      }],
+      "title": "Clients by Group",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Email" }, "properties": [{ "id": "links", "value": [{ "title": "Drill down", "url": "/d/xui-mega-dashboard?var-email=${__value.text}" }] }] },
+          { "matcher": { "id": "byName", "options": "Online" }, "properties": [{ "id": "mappings", "value": [{ "options": { "0": { "color": "red", "index": 1, "text": "offline" }, "1": { "color": "green", "index": 0, "text": "online" } }, "type": "value" }] }, { "id": "custom.cellOptions", "value": { "type": "color-text" } }] },
+          { "matcher": { "id": "byName", "options": "Up Bps" }, "properties": [{ "id": "unit", "value": "Bps" }] },
+          { "matcher": { "id": "byName", "options": "Down Bps" }, "properties": [{ "id": "unit", "value": "Bps" }] },
+          { "matcher": { "id": "byName", "options": "Total Used" }, "properties": [{ "id": "unit", "value": "decbytes" }, { "id": "custom.cellOptions", "value": { "type": "color-background" } }] },
+          { "matcher": { "id": "byName", "options": "Limit Used" }, "properties": [{ "id": "unit", "value": "percentunit" }, { "id": "max", "value": 1 }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] },
+          { "matcher": { "id": "byName", "options": "Expires In" }, "properties": [{ "id": "unit", "value": "s" }] }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 42 },
+      "id": 23,
+      "options": { "cellHeight": "sm", "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "Total Used" }] },
+      "targets": [
+        { "expr": "sum by (email) (rate(xui_client_traffic_up_bytes_total{panel=~\"$panel\"}[5m]))", "format": "table", "instant": true, "refId": "A" },
+        { "expr": "sum by (email) (rate(xui_client_traffic_down_bytes_total{panel=~\"$panel\"}[5m]))", "format": "table", "instant": true, "refId": "B" },
+        { "expr": "sum by (email) (xui_client_traffic_up_bytes_total{panel=~\"$panel\"} + xui_client_traffic_down_bytes_total{panel=~\"$panel\"})", "format": "table", "instant": true, "refId": "C" },
+        { "expr": "xui_client_online{panel=~\"$panel\"}", "format": "table", "instant": true, "refId": "D" },
+        { "expr": "(sum by (email) (xui_client_traffic_up_bytes_total{panel=~\"$panel\"} + xui_client_traffic_down_bytes_total{panel=~\"$panel\"})) / xui_client_traffic_limit_bytes{panel=~\"$panel\"} > 0", "format": "table", "instant": true, "refId": "E" },
+        { "expr": "xui_client_expiry_timestamp_seconds{panel=~\"$panel\"} - time()", "format": "table", "instant": true, "refId": "F" },
+        { "expr": "count by (email) (xui_client_group_info{panel=~\"$panel\"})", "format": "table", "instant": true, "refId": "G" }
+      ],
+      "title": "All Users",
+      "transformations": [
+        { "id": "seriesToColumns", "options": { "byField": "email" } },
+        { "id": "organize", "options": {
+          "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "Time 5": true, "Time 6": true, "Time 7": true, "__name__": true, "instance": true, "job": true, "panel 2": true, "panel 3": true, "panel 4": true, "panel 5": true, "panel 6": true, "panel 7": true },
+          "renameByName": {
+            "Value #A": "Up Bps",
+            "Value #B": "Down Bps",
+            "Value #C": "Total Used",
+            "Value #D": "Online",
+            "Value #E": "Limit Used",
+            "Value #F": "Expires In",
+            "Value #G": "Inbounds",
+            "email": "Email",
+            "panel": "Panel"
+          }
+        }}
+      ],
+      "type": "table"
+    },
+
+    {
+      "collapsed": true,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 },
+      "id": 100,
+      "repeat": "node",
+      "repeatDirection": "v",
+      "title": "Node Detail: $node",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "description": "CPU usage percent reported by 3x-ui for this node.",
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 1, "showPoints": "never" }, "max": 100, "min": 0, "unit": "percent" }, "overrides": [] },
+          "gridPos": { "h": 7, "w": 6, "x": 0, "y": 53 },
+          "id": 101,
+          "targets": [{ "expr": "xui_node_cpu_percent{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "{{node}}", "refId": "A" }],
+          "title": "CPU %",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "description": "Memory usage percent reported by 3x-ui for this node.",
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "lineWidth": 1, "showPoints": "never" }, "max": 100, "min": 0, "unit": "percent" }, "overrides": [] },
+          "gridPos": { "h": 7, "w": 6, "x": 6, "y": 53 },
+          "id": 102,
+          "targets": [{ "expr": "xui_node_mem_percent{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "{{node}}", "refId": "A" }],
+          "title": "Memory %",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "description": "Sum of client upload+download rate on this node.",
+          "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 15, "lineWidth": 1, "showPoints": "never" }, "unit": "Bps" }, "overrides": [] },
+          "gridPos": { "h": 7, "w": 6, "x": 12, "y": 53 },
+          "id": 103,
+          "targets": [{
+            "expr": "sum(rate(xui_client_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_client_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+            "legendFormat": "total",
+            "refId": "A"
+          }, {
+            "expr": "sum(rate(xui_client_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+            "legendFormat": "up",
+            "refId": "B"
+          }, {
+            "expr": "sum(rate(xui_client_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+            "legendFormat": "down",
+            "refId": "C"
+          }],
+          "title": "Client Traffic",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "node up" }, "properties": [{ "id": "mappings", "value": [{ "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } }, "type": "value" }] }] },
+              { "matcher": { "id": "byName", "options": "xray" }, "properties": [{ "id": "mappings", "value": [{ "options": { "0": { "text": "stopped" }, "1": { "text": "running" } }, "type": "value" }] }] }
+            ]
+          },
+          "gridPos": { "h": 7, "w": 6, "x": 18, "y": 53 },
+          "id": 104,
+          "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+          "targets": [
+            { "expr": "xui_node_up{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "node up", "refId": "A" },
+            { "expr": "xui_node_xray_up{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "xray", "refId": "B" },
+            { "expr": "xui_node_online_clients{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "online", "refId": "C" },
+            { "expr": "xui_node_client_count{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "clients", "refId": "D" },
+            { "expr": "xui_node_latency_ms{panel=~\"$panel\",node=~\"$node\"}", "legendFormat": "latency ms", "refId": "E" }
+          ],
+          "title": "Status",
+          "type": "stat"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+      "id": 200,
+      "title": "User Detail: $email",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "max": 1, "min": 0, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.7 }, { "color": "red", "value": 0.9 }] }, "unit": "percentunit" },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 54 },
+      "id": 201,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "expr": "(sum(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"} + xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"})) / xui_client_traffic_limit_bytes{panel=~\"$panel\",email=~\"$email\"} > 0",
+        "refId": "A"
+      }],
+      "title": "Limit Used",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "mappings": [{ "options": { "0": { "color": "red", "index": 1, "text": "offline" }, "1": { "color": "green", "index": 0, "text": "online" } }, "type": "value" }], "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 54 },
+      "id": 202,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "xui_client_online{panel=~\"$panel\",email=~\"$email\"}", "refId": "A" }],
+      "title": "Online",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 54 },
+      "id": 203,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "xui_client_expiry_timestamp_seconds{panel=~\"$panel\",email=~\"$email\"} - time()", "refId": "A" }],
+      "title": "Expires In",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "decbytes" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 54 },
+      "id": 204,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"} + xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"})", "refId": "A" }],
+      "title": "Total Traffic",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 54 },
+      "id": 205,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "expr": "sum(rate(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]) + rate(xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]))",
+        "refId": "A"
+      }],
+      "title": "Current Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "unit": "dateTimeFromNow" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 54 },
+      "id": 206,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "xui_client_last_online_timestamp_seconds{panel=~\"$panel\",email=~\"$email\"}", "refId": "A" }],
+      "title": "Last Online",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" }, "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 58 },
+      "id": 207,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "sum(rate(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]))",
+        "legendFormat": "upload",
+        "refId": "A"
+      }, {
+        "expr": "sum(rate(xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]))",
+        "legendFormat": "download",
+        "refId": "B"
+      }, {
+        "expr": "sum(rate(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]) + rate(xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"}[5m]))",
+        "legendFormat": "total",
+        "refId": "C"
+      }],
+      "title": "Traffic Rate Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 5, "lineWidth": 1, "showPoints": "never" }, "unit": "decbytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 58 },
+      "id": 208,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [{
+        "expr": "sum(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"})",
+        "legendFormat": "upload total",
+        "refId": "A"
+      }, {
+        "expr": "sum(xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"})",
+        "legendFormat": "download total",
+        "refId": "B"
+      }, {
+        "expr": "sum(xui_client_traffic_up_bytes_total{panel=~\"$panel\",email=~\"$email\"} + xui_client_traffic_down_bytes_total{panel=~\"$panel\",email=~\"$email\"})",
+        "legendFormat": "combined total",
+        "refId": "C"
+      }],
+      "title": "Cumulative Traffic",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 66 },
+      "id": 209,
+      "options": {
+        "code": { "language": "plaintext", "showLineNumbers": false, "showMiniMap": false },
+        "content": "### Per-user, per-node breakdown is not available\n\n3x-ui aggregates client traffic **centrally by email** (single `client_traffics` row per client, summed across all nodes). The per-inbound `clientStats` exposed by the API are replicated across the client's inbounds in multi-node setups, so a per-node / per-inbound split for a single user **cannot be computed reliably** and would double-count.\n\n- **Per-user totals** above use the authoritative email-keyed counters (`xui_client_traffic_*`).\n- For **per-node traffic**, see the *Traffic by Node* section (inbound-level `xui_inbound_*`).",
+        "mode": "markdown"
+      },
+      "title": "Why no per-node split here?",
+      "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["3x-ui", "mega"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_up, panel)",
+        "includeAll": true,
+        "label": "Panel",
+        "multi": true,
+        "name": "panel",
+        "query": { "query": "label_values(xui_up, panel)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "query": { "query": "label_values(xui_node_up{panel=~\"$panel\"}, node)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": false, "text": "", "value": "" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_client_traffic_up_bytes_total{panel=~\"$panel\"}, email)",
+        "includeAll": false,
+        "label": "User",
+        "multi": false,
+        "name": "email",
+        "query": { "query": "label_values(xui_client_traffic_up_bytes_total{panel=~\"$panel\"}, email)", "refId": "PrometheusVariableQueryEditor-VariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "3x-ui Mega Dashboard",
+  "uid": "xui-mega-dashboard",
+  "version": 1
+}

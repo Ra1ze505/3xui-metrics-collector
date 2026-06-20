@@ -71,10 +71,11 @@ docker compose up -d
 
 Grafana dashboards (folder **3x-ui**):
 
-1. **Fleet Overview** — nodes table, online clients, traffic by node
-2. **Node Detail** — master CPU/mem/disk/load/network, xray, uptime
-3. **Users** — top clients, online, limits, expiry, groups
-4. **Inbounds** — traffic and clients by protocol/inbound
+1. **Mega Dashboard** — all-in-one: fleet KPI, traffic by node/user, per-node CPU/RAM rows, user drill-down
+2. **Fleet Overview** — nodes table, online clients, traffic by node
+3. **Node Detail** — master CPU/mem/disk/load/network, xray, uptime
+4. **Users** — top clients, online, limits, expiry, groups
+5. **Inbounds** — traffic and clients by protocol/inbound
 
 ## Metrics
 
@@ -117,11 +118,15 @@ All metrics use prefix `xui_`.
 |--------|------|--------|
 | `xui_inbound_up_bytes_total` | counter | `panel`, `node`, `inbound_id`, ... |
 | `xui_inbound_down_bytes_total` | counter | same |
+| `xui_client_traffic_up_bytes_total` | counter | `panel`, `email` |
+| `xui_client_traffic_down_bytes_total` | counter | `panel`, `email` |
 | `xui_client_up_bytes_total` | counter | `panel`, `node`, `email`, `inbound_id`, ... |
 | `xui_client_down_bytes_total` | counter | same |
 | `xui_client_online` | gauge | `panel`, `email` |
 | `xui_client_traffic_limit_bytes` | gauge | `panel`, `email` |
 | `xui_client_group_info` | gauge | `panel`, `email`, `group` |
+
+> **Per-client traffic — which metric to use.** 3x-ui aggregates client traffic **centrally by email** (one `client_traffics` row per client, summed across all nodes). Use `xui_client_traffic_up/down_bytes_total{panel,email}` for authoritative per-user totals, rates and limit comparisons. The per-inbound `xui_client_up/down_bytes_total{...node...}` come from inbound `clientStats`, which 3x-ui replicates across a client's inbounds in multi-node setups — they are **not summable per user/node** and exist mainly for inbound-level views. For per-node traffic, prefer inbound counters (`xui_inbound_*`).
 
 ### Outbounds (optional)
 
