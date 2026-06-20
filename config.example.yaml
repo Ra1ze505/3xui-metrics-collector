@@ -1,0 +1,10 @@
+listen_addr: ":2112"
+poll_interval: 30s
+request_timeout: 10s
+
+panels:
+  - name: "master-eu"
+    base_url: "https://panel.example.com:54321/secret"
+    api_token: "your-api-token-here"
+    insecure_skip_verify: false
+    collect_outbounds: true

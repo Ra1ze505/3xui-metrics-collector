@@ -1,0 +1,106 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [{
+        "expr": "sum by (protocol) (rate(xui_inbound_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_inbound_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+        "legendFormat": "{{protocol}}",
+        "refId": "A"
+      }],
+      "title": "Traffic by Protocol",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [{
+        "expr": "sum by (protocol) (xui_inbound_client_count{panel=~\"$panel\",node=~\"$node\"})",
+        "legendFormat": "{{protocol}}",
+        "refId": "A"
+      }],
+      "title": "Clients by Protocol",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 10 },
+      "id": 3,
+      "targets": [{
+        "expr": "topk(15, rate(xui_inbound_up_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]) + rate(xui_inbound_down_bytes_total{panel=~\"$panel\",node=~\"$node\"}[5m]))",
+        "legendFormat": "{{remark}} ({{protocol}}:{{port}})",
+        "refId": "A"
+      }],
+      "title": "Top Inbounds by Traffic Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
+      "id": 4,
+      "options": { "showHeader": true },
+      "targets": [{
+        "expr": "xui_inbound_client_count{panel=~\"$panel\",node=~\"$node\"}",
+        "format": "table",
+        "instant": true,
+        "refId": "A"
+      }],
+      "title": "Inbound Client Count",
+      "transformations": [
+        { "id": "organize", "options": {
+          "excludeByName": { "Time": true, "__name__": true, "instance": true, "job": true },
+          "renameByName": { "Value": "Clients", "inbound_id": "ID", "panel": "Panel", "port": "Port", "protocol": "Protocol", "remark": "Remark", "tag": "Tag", "node": "Node" }
+        }}
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["3x-ui", "inbounds"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_up, panel)",
+        "includeAll": true,
+        "multi": true,
+        "name": "panel",
+        "query": "label_values(xui_up, panel)",
+        "refresh": 2,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "name": "node",
+        "query": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "3x-ui Inbounds",
+  "uid": "xui-inbounds",
+  "version": 1
+}

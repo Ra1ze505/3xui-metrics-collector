@@ -1,0 +1,105 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [{
+        "expr": "topk(20, sum by (email) (rate(xui_client_up_bytes_total{panel=~\"$panel\"}[5m]) + rate(xui_client_down_bytes_total{panel=~\"$panel\"}[5m])))",
+        "legendFormat": "{{email}}",
+        "refId": "A"
+      }],
+      "title": "Top Clients by Traffic Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "targets": [{ "expr": "xui_client_online{panel=~\"$panel\"} == 1", "legendFormat": "{{email}}", "refId": "A" }],
+      "title": "Online Clients",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1, "min": 0 }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "id": 3,
+      "targets": [{
+        "expr": "(sum by (email) (xui_client_up_bytes_total{panel=~\"$panel\"} + xui_client_down_bytes_total{panel=~\"$panel\"})) / xui_client_traffic_limit_bytes{panel=~\"$panel\"} > 0",
+        "legendFormat": "{{email}}",
+        "refId": "A"
+      }],
+      "title": "Traffic vs Limit (ratio)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "id": 4,
+      "targets": [{
+        "expr": "xui_client_expiry_timestamp_seconds{panel=~\"$panel\"} - time()",
+        "legendFormat": "{{email}}",
+        "refId": "A"
+      }],
+      "title": "Time Until Expiry",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 18 },
+      "id": 5,
+      "targets": [{
+        "expr": "count by (group) (xui_client_group_info{panel=~\"$panel\"})",
+        "legendFormat": "{{group}}",
+        "refId": "A"
+      }],
+      "title": "Clients by Group",
+      "type": "barchart"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["3x-ui", "users"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_up, panel)",
+        "includeAll": true,
+        "multi": true,
+        "name": "panel",
+        "query": "label_values(xui_up, panel)",
+        "refresh": 2,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "definition": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "name": "node",
+        "query": "label_values(xui_node_up{panel=~\"$panel\"}, node)",
+        "refresh": 2,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "3x-ui Users",
+  "uid": "xui-users",
+  "version": 1
+}

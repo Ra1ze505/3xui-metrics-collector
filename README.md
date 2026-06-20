@@ -1,258 +1,141 @@
-# 3xui-metrics-collector
+# 3x-ui Metrics Exporter (3.3.1)
 
-Service for collecting metrics from 3xui control panel and exporting them in Prometheus format.
+Prometheus exporter for [3x-ui](https://github.com/MHSanaei/3x-ui) **3.3.1** master panels. It polls panel APIs in the background, caches snapshots, and exposes metrics for Prometheus and Grafana.
 
-## Description
+## Features
 
-This service collects metrics from the 3xui control panel and exports them in Prometheus format. Metrics include:
-- Number of clients
-- Total traffic
-- Service status
-- Other metrics available through the 3xui API
+- **API token authentication** (Bearer) — no cookie login
+- **Multi-panel** support with `panel` label
+- Metrics for **master + remote nodes**, **system**, **inbounds**, **clients**, and optional **outbounds**
+- Per-client traffic from inbound `clientStats` (correct counters for `rate()`)
+- Docker Compose stack: exporter + Prometheus + Grafana with pre-built dashboards
 
 ## Requirements
 
-- Go 1.21 or higher (for building from source)
-- Access to 3xui control panel
-- Prometheus (for collecting metrics)
-
-## Installation Methods
-
-### Method 1: Using Docker (Recommended)
-
-Run the service using Docker:
-
-```bash
-docker run -d \
-  --name 3xui-metrics-collector \
-  -p 2112:2112 \
-  -e X_UI_HOST=your-xui-host \
-  -e X_UI_PORT=54321 \
-  -e X_UI_USERNAME=admin \
-  -e X_UI_PASSWORD=your-password \
-  ra1zee/3xui-metrics-collector:latest
-```
-
-With docker-compose:
-
-```yaml
-version: '3.8'
-services:
-  3xui-metrics-collector:
-    image: ra1zee/3xui-metrics-collector:latest
-    ports:
-      - "2112:2112"
-    environment:
-      - X_UI_HOST=your-xui-host
-      - X_UI_PORT=54321
-      - X_UI_USERNAME=admin
-      - X_UI_PASSWORD=your-password
-    restart: unless-stopped
-```
-
-### Method 2: Download Pre-built Binary
-
-Download the latest release for your platform:
-
-```bash
-# For Linux amd64
-curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-amd64.tar.gz
-tar -xzf 3xui-metrics-collector.tar.gz
-
-# For Linux arm64
-curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-arm64.tar.gz
-tar -xzf 3xui-metrics-collector.tar.gz
-
-# For macOS amd64
-curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-darwin-amd64.tar.gz
-tar -xzf 3xui-metrics-collector.tar.gz
-
-# For macOS arm64 (Apple Silicon)
-curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-darwin-arm64.tar.gz
-tar -xzf 3xui-metrics-collector.tar.gz
-
-# For Windows amd64
-curl -L -o 3xui-metrics-collector.zip https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-windows-amd64.zip
-unzip 3xui-metrics-collector.zip
-```
-
-### Method 3: Build from Source
-
-1. Clone the repository:
-```bash
-git clone https://github.com/Ra1ze505/3xui-metrics-collector.git
-cd 3xui-metrics-collector
-```
-
-2. Build the project:
-```bash
-go build -o 3xui-metrics-collector
-```
+- 3x-ui **3.3.1** master panel
+- API token: **Settings → Security → API Token** (full-admin credential)
 
 ## Configuration
 
-The service uses the following environment variables:
+Copy `config.example.yaml` to `config.yaml` and edit:
 
-- `X_UI_HOST` - 3xui control panel host
-- `X_UI_PORT` - 3xui control panel port  
-- `X_UI_BASEPATH` - API base path (empty by default)
-- `X_UI_USERNAME` - username for API access
-- `X_UI_PASSWORD` - password for API access
+```yaml
+listen_addr: ":2112"
+poll_interval: 30s
+request_timeout: 10s
 
-## Setting up systemd service
-
-After downloading the binary (Method 2), you can set it up as a systemd service:
-
-1. Create the necessary directories and move files:
-```bash
-# Download and extract the binary (example for Linux amd64)
-curl -L -o 3xui-metrics-collector.tar.gz https://github.com/Ra1ze505/3xui-metrics-collector/releases/latest/download/3xui-metrics-collector-linux-amd64.tar.gz
-tar -xzf 3xui-metrics-collector.tar.gz
-
-# Create directories
-sudo mkdir -p /opt/3xui-metrics-collector
-sudo mkdir -p /etc/3xui-metrics-collector
-
-# Move binary
-sudo mv 3xui-metrics-collector /opt/3xui-metrics-collector/
+panels:
+  - name: "master-eu"
+    base_url: "https://panel.example.com:54321/secret"
+    api_token: "your-api-token"
+    insecure_skip_verify: false
+    collect_outbounds: true
 ```
 
-2. Create configuration file `/etc/3xui-metrics-collector/config.env`:
+| Field | Description |
+|-------|-------------|
+| `name` | Panel label (`panel` in metrics) |
+| `base_url` | Full URL including optional base path |
+| `api_token` | Bearer token from panel settings |
+| `insecure_skip_verify` | Skip TLS verification (self-signed certs) |
+| `collect_outbounds` | Scrape `/panel/api/xray/getOutboundsTraffic` |
+
+### Environment overrides
+
+- `CONFIG_PATH` — config file path (default `config.yaml`)
+- `XUI_PANEL_<NAME>_TOKEN` — override `api_token` for panel `<name>` (e.g. `XUI_PANEL_MASTER_EU_TOKEN`)
+
+## Run locally
+
 ```bash
-sudo tee /etc/3xui-metrics-collector/config.env > /dev/null <<EOF
-X_UI_HOST=your_xui_host
-X_UI_PORT=your_xui_port
-X_UI_BASEPATH=your_base_path
-X_UI_USERNAME=your_username
-X_UI_PASSWORD=your_password
+go run ./cmd/exporter -config config.yaml
+curl http://localhost:2112/metrics
+curl http://localhost:2112/healthz
 ```
 
-3. Create systemd service file `/etc/systemd/system/3xui-metrics-collector.service`:
+## Docker Compose (Prometheus + Grafana)
+
 ```bash
-sudo tee /etc/systemd/system/3xui-metrics-collector.service > /dev/null <<EOF
-[Unit]
-Description=3xui Metrics Collector
-After=network.target
+cp config.example.yaml config.yaml
+# edit config.yaml with your panel URL and token
 
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/opt/3xui-metrics-collector
-ExecStart=/opt/3xui-metrics-collector/3xui-metrics-collector
-EnvironmentFile=/etc/3xui-metrics-collector/config.env
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
+cd deploy
+docker compose up -d
 ```
 
-4. Set proper permissions:
-```bash
-sudo chown -R root:root /opt/3xui-metrics-collector
-sudo chown -R root:root /etc/3xui-metrics-collector
-sudo chmod 755 /opt/3xui-metrics-collector/3xui-metrics-collector
-sudo chmod 600 /etc/3xui-metrics-collector/config.env
-```
+| Service | URL |
+|---------|-----|
+| Exporter | http://localhost:2112/metrics |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3000 (admin / admin) |
 
-5. Start the service:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable 3xui-metrics-collector
-sudo systemctl start 3xui-metrics-collector
-```
+Grafana dashboards (folder **3x-ui**):
 
-## Service Management
-
-- Check status:
-```bash
-sudo systemctl status 3xui-metrics-collector
-```
-
-- Stop service:
-```bash
-sudo systemctl stop 3xui-metrics-collector
-```
-
-- Restart service:
-```bash
-sudo systemctl restart 3xui-metrics-collector
-```
-
-- View logs:
-```bash
-sudo journalctl -u 3xui-metrics-collector -f
-```
+1. **Fleet Overview** — nodes table, online clients, traffic by node
+2. **Node Detail** — master CPU/mem/disk/load/network, xray, uptime
+3. **Users** — top clients, online, limits, expiry, groups
+4. **Inbounds** — traffic and clients by protocol/inbound
 
 ## Metrics
 
-The service exports metrics in Prometheus format on port 2112. Available metrics:
+All metrics use prefix `xui_`.
 
-- `xui_clients_total` - total number of clients
-- `xui_traffic_total_bytes` - total traffic in bytes
-- `xui_service_status` - service status (1 - active, 0 - inactive)
+### Exporter
 
-Access metrics at: `http://localhost:2112/metrics`
+| Metric | Type | Labels |
+|--------|------|--------|
+| `xui_up` | gauge | `panel` |
+| `xui_scrape_duration_seconds` | gauge | `panel` |
+| `xui_scrape_errors_total` | counter | `panel`, `endpoint` |
+| `xui_panel_info` | gauge | `panel`, `version` |
 
-## Prometheus Configuration
+### Nodes (master + remote)
 
-1. Install Prometheus if not already installed:
+| Metric | Type | Labels |
+|--------|------|--------|
+| `xui_node_up` | gauge | `panel`, `node`, `role` |
+| `xui_node_cpu_percent` | gauge | `panel`, `node`, `role` |
+| `xui_node_mem_percent` | gauge | `panel`, `node`, `role` |
+| `xui_node_online_clients` | gauge | `panel`, `node`, `role` |
+| `xui_node_client_count` | gauge | `panel`, `node`, `role` |
+| `xui_node_inbound_count` | gauge | `panel`, `node`, `role` |
+| `xui_node_xray_up` | gauge | `panel`, `node`, `role` |
+
+### System (master)
+
+| Metric | Type | Labels |
+|--------|------|--------|
+| `xui_server_cpu_percent` | gauge | `panel` |
+| `xui_server_mem_bytes` | gauge | `panel`, `state` |
+| `xui_server_net_traffic_bytes_total` | counter | `panel`, `direction` |
+| `xui_server_load` | gauge | `panel`, `period` |
+| `xui_xray_up` | gauge | `panel` |
+
+### Inbounds & clients
+
+| Metric | Type | Labels |
+|--------|------|--------|
+| `xui_inbound_up_bytes_total` | counter | `panel`, `node`, `inbound_id`, ... |
+| `xui_inbound_down_bytes_total` | counter | same |
+| `xui_client_up_bytes_total` | counter | `panel`, `node`, `email`, `inbound_id`, ... |
+| `xui_client_down_bytes_total` | counter | same |
+| `xui_client_online` | gauge | `panel`, `email` |
+| `xui_client_traffic_limit_bytes` | gauge | `panel`, `email` |
+| `xui_client_group_info` | gauge | `panel`, `email`, `group` |
+
+### Outbounds (optional)
+
+| Metric | Type | Labels |
+|--------|------|--------|
+| `xui_outbound_up_bytes_total` | counter | `panel`, `tag` |
+| `xui_outbound_down_bytes_total` | counter | `panel`, `tag` |
+
+## Build
+
 ```bash
-# For Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install prometheus
-
-# For CentOS/RHEL
-sudo yum install prometheus
+go build -o 3xui-metrics-collector ./cmd/exporter
 ```
-
-2. Add metrics collection configuration to `/etc/prometheus/prometheus.yml`:
-```yaml
-scrape_configs:
-  - job_name: '3xui'
-    static_configs:
-      - targets: ['localhost:2112']
-    scrape_interval: 15s
-    scrape_timeout: 10s
-```
-
-3. Restart Prometheus to apply changes:
-```bash
-sudo systemctl restart prometheus
-```
-
-4. Verify metrics are being collected:
-   - Open Prometheus web interface (usually available at http://localhost:9090)
-   - Go to Status -> Targets
-   - Make sure the `3xui` target is in UP state
-
-5. Example queries for Grafana:
-```promql
-# Total number of clients
-xui_clients_total
-
-# Total traffic in gigabytes
-xui_traffic_total_bytes / 1024 / 1024 / 1024
-
-# Service status
-xui_service_status
-```
-
-## Docker Image Tags
-
-Available Docker image tags:
-- `latest` - latest stable release
-- `v1.0.0` - specific version tags
-- `main` - latest development build
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
 
 ## License
 
-MIT 
+MIT

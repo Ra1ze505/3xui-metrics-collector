@@ -20,7 +20,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
+        go-version: '1.22'
 
     - name: Cache Go modules
       uses: actions/cache@v3
@@ -62,7 +62,7 @@ jobs:
           fi
           
           echo "Building for $os/$arch..."
-          GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-w -s" -o "build/$output_name" .
+          GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags="-w -s" -o "build/$output_name" ./cmd/exporter
           
           # Create archive
           cd build
